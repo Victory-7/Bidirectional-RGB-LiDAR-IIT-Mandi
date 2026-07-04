@@ -1,0 +1,7 @@
+LiDM RGB RECONSTRUCTION REPORT
+============================================================
+
+Best Validation Loss: 0.216079
+Epochs Completed: 26
+Learning Rate: 5e-05
+Batch Size: 2

@@ -1,0 +1,8 @@
+EXPERIMENT 4 REPORT
+============================================================
+
+Best Validation Loss: 0.045928
+Epochs Completed: 46
+Learning Rate: 0.0001
+Batch Size: 4
+Number of Points: 2048

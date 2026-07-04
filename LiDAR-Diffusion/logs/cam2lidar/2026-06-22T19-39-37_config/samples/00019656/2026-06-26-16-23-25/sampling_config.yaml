@@ -1,0 +1,12 @@
+baseline: false
+batch_size: 1
+custom_steps: 50
+dataset: kitti
+eta: 1.0
+eval: false
+file: null
+logdir: none
+resume: logs/cam2lidar/2026-06-22T19-39-37_config/checkpoints/last.ckpt
+seed: 1000
+vanilla: false
+verbose: false

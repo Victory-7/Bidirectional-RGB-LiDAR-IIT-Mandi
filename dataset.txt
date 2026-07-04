@@ -1,0 +1,132 @@
+Enter your KITTI dataset path.
+Example:
+  D:/KITTI
+  /home/user/KITTI
+
+======================================================================
+KITTI DATASET EXPLORER
+======================================================================
+Dataset Path: /DATA/suhani/kitti_object/training
+
+
+[1] DATASET OVERVIEW
+----------------------------------------------------------------------
+Top-level folders:
+  - velodyne
+  - label_2
+  - image_2
+  - calib
+
+[2] FOLDER ANALYSIS
+----------------------------------------------------------------------
+
+Folder: velodyne
+Total Files: 7481
+File Types:
+   .bin       -> 7481
+
+Folder: label_2
+Total Files: 7481
+File Types:
+   .txt       -> 7481
+
+Folder: image_2
+Total Files: 7481
+File Types:
+   .png       -> 7481
+
+Folder: calib
+Total Files: 7481
+File Types:
+   .txt       -> 7481
+
+[3] TRAIN / VALIDATION / TEST ANALYSIS
+----------------------------------------------------------------------
+
+Split Folder: training
+Path: /DATA/suhani/kitti_object/training
+Number of files: 0
+
+Split Folder: training
+Path: /DATA/suhani/kitti_object/training
+Number of files: 0
+
+[4] IMAGE ANALYSIS
+----------------------------------------------------------------------
+Total image files: 7481
+
+Sample image paths:
+  /DATA/suhani/kitti_object/training/image_2/003036.png
+  /DATA/suhani/kitti_object/training/image_2/006400.png
+  /DATA/suhani/kitti_object/training/image_2/007229.png
+  /DATA/suhani/kitti_object/training/image_2/002555.png
+  /DATA/suhani/kitti_object/training/image_2/002396.png
+
+[5] LIDAR / POINT CLOUD ANALYSIS
+----------------------------------------------------------------------
+Total LiDAR files: 7481
+
+Sample LiDAR paths:
+  /DATA/suhani/kitti_object/training/velodyne/005952.bin
+  /DATA/suhani/kitti_object/training/velodyne/001721.bin
+  /DATA/suhani/kitti_object/training/velodyne/000471.bin
+  /DATA/suhani/kitti_object/training/velodyne/001226.bin
+  /DATA/suhani/kitti_object/training/velodyne/003328.bin
+
+[6] LABEL ANALYSIS
+----------------------------------------------------------------------
+Total label files: 7481
+
+Detected Object Classes:
+  Car             -> 228
+  Cyclist         -> 13
+  DontCare        -> 68
+  Misc            -> 8
+  Pedestrian      -> 20
+  Tram            -> 1
+  Truck           -> 5
+  Van             -> 28
+
+[7] CALIBRATION FILE ANALYSIS
+----------------------------------------------------------------------
+Total calibration files: 7481
+
+Sample calibration files:
+  /DATA/suhani/kitti_object/training/calib/007099.txt
+  /DATA/suhani/kitti_object/training/calib/005000.txt
+  /DATA/suhani/kitti_object/training/calib/001976.txt
+  /DATA/suhani/kitti_object/training/calib/000595.txt
+  /DATA/suhani/kitti_object/training/calib/000939.txt
+
+[8] DATASET SIZE ANALYSIS
+----------------------------------------------------------------------
+Approximate dataset size: 19.10 GB
+
+[9] KITTI STRUCTURE DETECTION
+----------------------------------------------------------------------
+Detected KITTI-style folders:
+  /DATA/suhani/kitti_object/training/velodyne
+  /DATA/suhani/kitti_object/training/label_2
+  /DATA/suhani/kitti_object/training/image_2
+  /DATA/suhani/kitti_object/training/calib
+
+[10] FINAL SUMMARY
+----------------------------------------------------------------------
+This dataset appears to contain:
+  - RGB image data
+  - LiDAR point cloud data
+  - Calibration files
+  - Annotation labels
+  - Training/testing split structure
+
+Potential uses:
+  - Depth estimation
+  - Pseudo-LiDAR generation
+  - Object detection
+  - Sensor fusion
+  - Autonomous navigation
+  - Swarm intelligence research
+
+[11] EXPORTING REPORT
+----------------------------------------------------------------------
+Report exported to: kitti_dataset_report.json

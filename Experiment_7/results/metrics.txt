@@ -1,0 +1,11 @@
+OPTION B TRAINING REPORT
+============================================================
+
+Best Validation Loss: 0.020448
+Best Epoch: 95
+Epochs Completed: 105
+Batch Size: 2
+Learning Rate: 0.0001
+Transformer Dim: 256
+Transformer Layers: 4
+Transformer Heads: 4

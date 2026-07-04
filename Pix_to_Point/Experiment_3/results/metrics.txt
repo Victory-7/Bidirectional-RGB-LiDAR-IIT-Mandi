@@ -1,0 +1,6 @@
+EXPERIMENT 3 REPORT
+============================================================
+
+Best Validation Loss: 0.028555
+Final Validation RMSE: 0.160359
+Final Validation MAE: 0.094124

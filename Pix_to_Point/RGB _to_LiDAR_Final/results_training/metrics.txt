@@ -1,0 +1,7 @@
+EXPERIMENT 5 REPORT
+============================================================
+
+Best Validation Loss: 0.002269
+Epochs Completed: 33
+Learning Rate: 0.0001
+Batch Size: 4

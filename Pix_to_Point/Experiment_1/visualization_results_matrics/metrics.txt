@@ -1,0 +1,9 @@
+POINT CLOUD METRICS
+===================
+
+Sample File : /home/teaching/Suhani/project/Pix_to_Point/Experiment_2/dataset/depth/004783.npy
+GT File     : /home/teaching/Suhani/project/kitti_object/training/velodyne/004783.bin
+
+Chamfer Distance : 7.583152
+RMSE             : 11.186473
+MAE              : 6.624168

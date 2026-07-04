@@ -1,0 +1,117 @@
+# ==========================================================
+# PROJECT CONFIG
+# RGB -> RANGE IMAGE -> POINT CLOUD
+# ==========================================================
+
+dataset:
+
+  root: "/home/teaching/Suhani/project/kitti_object/training"
+
+  image_dir: "image_2"
+  velodyne_dir: "velodyne"
+  calib_dir: "calib"
+
+  train_split: 0.8
+  random_seed: 42
+
+
+sensor:
+
+  lidar_type: "Velodyne HDL-64E"
+
+  num_beams: 64
+
+  range_image_height: 64
+  range_image_width: 2048
+
+  fov_up: 3.0
+  fov_down: -25.0
+
+  max_range: 120.0
+  min_range: 1.0
+
+
+model:
+
+  encoder: "resnet50"
+
+  pretrained: true
+
+  # Reduced for stability
+  transformer_dim: 256
+
+  transformer_heads: 4
+
+  transformer_layers: 4
+
+  decoder_channels:
+    - 256
+    - 128
+    - 64
+    - 32
+
+  output_channels: 1
+
+
+training:
+
+  batch_size: 2
+
+  epochs: 300
+
+  learning_rate: 0.0001
+
+  weight_decay: 0.0001
+
+  num_workers: 4
+
+  patience: 10
+
+  min_delta: 0.00001
+
+
+loss:
+
+  tanh_weight: 0.4
+
+  range_weight: 0.6
+
+  # Start with OT disabled
+  sinkhorn_weight: 0.0
+
+  sinkhorn_blur: 0.05
+
+  # Point sampling for OT
+  ot_points: 1024
+
+
+paths:
+
+  models: "models"
+
+  range_images: "range_images"
+
+  generated_bins: "generated_bins"
+
+  predictions: "results/predictions"
+
+  results: "results"
+
+  logs: "logs"
+
+
+export:
+
+  save_best_model: true
+
+  save_final_model: true
+
+  save_range_images: true
+
+  save_pointclouds: true
+
+  save_bin_files: true
+
+  save_metrics: true
+
+  save_visualizations: true

@@ -1,0 +1,263 @@
+Experiment 2 Report
+Depth Map to Point Cloud Generation using Deep Learning
+1. Objective
+
+The objective of Experiment 2 was to develop a deep learning model capable of converting monocular depth maps into 3D point clouds for pseudo-LiDAR generation using the KITTI dataset.
+
+This stage extends the previous RGB-to-Depth experiment and attempts to reconstruct 3D spatial geometry from estimated depth information.
+
+The overall research pipeline becomes:
+
+RGB Image
+    ↓
+Depth Estimation Network
+    ↓
+Depth Map
+    ↓
+Point Cloud Prediction Network
+    ↓
+Pseudo LiDAR
+2. Dataset
+
+The KITTI dataset was used for training and evaluation.
+
+Input
+
+Depth maps stored as:
+
+dataset/depth/*.npy
+Ground Truth
+
+LiDAR point clouds stored as:
+
+dataset/pointcloud/*.npy
+3. Dataset Split
+
+The dataset was divided into:
+
+80% Training Set
+20% Validation Set
+
+Example statistics:
+
+Dataset Split	Samples
+Training	5984
+Validation	1497
+4. Model Architecture
+
+An improved deep neural network was designed for depth-to-point-cloud regression.
+
+The architecture includes:
+
+ResNet18 encoder backbone
+Residual fully connected blocks
+Point cloud generator head
+Chamfer Distance optimization
+5. Network Pipeline
+
+The processing pipeline is:
+
+Depth Map
+    ↓
+ResNet18 Encoder
+    ↓
+Global Feature Vector
+    ↓
+Residual FC Blocks
+    ↓
+Point Cloud Generator
+    ↓
+2048 × 3 Point Cloud
+6. Important Improvements
+
+Compared to the baseline experiment, several stability improvements were introduced.
+
+Improvements Added
+Stable Training
+Lower learning rate
+Gradient clipping
+AdamW optimizer
+Early stopping
+Better Feature Learning
+Residual fully connected layers
+Batch normalization
+Dropout regularization
+Numerical Stability
+Stable point cloud normalization
+Mixed precision training
+Validation monitoring
+7. Loss Function
+
+Chamfer Distance Loss was used for point cloud comparison.
+
+The loss measures geometric similarity between predicted and ground truth point sets.
+
+The optimization objective was:
+
+L
+Chamfer
+	​
+
+(P,G)=
+∣P∣
+1
+	​
+
+∑
+p∈P
+	​
+
+min
+g∈G
+	​
+
+∣∣p−g∣∣
+2
+	​
+
++
+∣G∣
+1
+	​
+
+∑
+g∈G
+	​
+
+min
+p∈P
+	​
+
+∣∣g−p∣∣
+2
+	​
+
+
+Where:
+
+P = Predicted point cloud
+G = Ground truth point cloud
+8. Training Configuration
+Parameter	Value
+Batch Size	4
+Learning Rate	1e-5
+Epochs	100
+Optimizer	AdamW
+Loss Function	Chamfer Distance
+Number of Points	2048
+Early Stopping	Enabled
+9. Generated Outputs
+
+The training pipeline generated:
+
+best_point_model.pth
+final_point_model.pth
+combined_loss_curve.png
+metrics.txt
+prediction visualization images
+10. Training Behavior
+
+The improved model showed significantly more stable training compared to the earlier baseline implementation.
+
+Observations
+Positive Improvements
+No catastrophic validation divergence
+Stable convergence behavior
+Validation loss remained bounded
+Training process became numerically stable
+Remaining Limitations
+Training loss plateaued early
+Validation loss oscillated
+Model underfitting observed
+Limited geometric accuracy
+11. Analysis of Results
+
+Although training stability improved, the architecture still exhibited important limitations.
+
+The main issue originates from the use of a global feature vector for full point cloud generation.
+
+Current architecture:
+
+Depth Map
+→ Global Feature Vector
+→ Fully Connected Decoder
+→ Point Cloud
+
+This approach forces the model to learn:
+
+Camera projection geometry
+Spatial structure
+Perspective relationships
+Absolute XYZ coordinates
+Point ordering
+
+purely from data.
+
+This creates a difficult optimization problem and limits geometric accuracy.
+
+12. Key Limitation
+
+The fully connected decoder destroys spatial locality.
+
+Depth maps contain structured geometric information, but compressing the entire image into a single latent vector removes important spatial relationships required for accurate 3D reconstruction.
+
+As a result:
+
+geometry quality saturates
+point cloud realism is limited
+generalization becomes difficult
+13. Experimental Conclusion
+
+Experiment 2 successfully demonstrated stable depth-to-point-cloud learning using deep neural networks.
+
+The system was capable of generating coarse pseudo-LiDAR point clouds from depth maps.
+
+However, the experiment also revealed the limitations of direct fully connected point cloud regression architectures.
+
+The results indicate that geometry-aware projection methods are more suitable for high-quality pseudo-LiDAR generation.
+
+14. Future Improvements
+
+The next research direction is to replace direct XYZ prediction with geometric reprojection.
+
+Recommended future pipeline:
+
+RGB Image
+    ↓
+Depth Estimation Network
+    ↓
+Camera Intrinsics Projection
+    ↓
+Raw Pseudo LiDAR
+    ↓
+Sparse CNN Refinement
+    ↓
+Enhanced Point Cloud
+15. Future Research Directions
+
+Potential improvements include:
+
+Geometric reprojection layers
+Camera intrinsic integration
+Sparse convolution networks
+Point completion refinement
+Attention-based architectures
+PointNet++ refinement modules
+Multi-scale geometric learning
+Transformer-based 3D reconstruction
+16. Final Summary
+
+Experiment 2 achieved:
+
+Stable depth-to-point-cloud training
+Successful pseudo-LiDAR generation
+Improved convergence behavior
+Better training stability than baseline
+
+The experiment also established that:
+
+Geometry-aware projection methods
+are superior to direct fully connected
+XYZ regression for pseudo-LiDAR generation.
+
+This experiment serves as a strong baseline for future geometry-based pseudo-LiDAR research.

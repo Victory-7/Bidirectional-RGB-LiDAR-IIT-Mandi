@@ -1,0 +1,18 @@
+dataset_root: "/home/teaching/Suhani/project/kitti_object"
+
+image_dir: "training/image_2"
+
+output_depth: "./outputs/depth_maps"
+output_heatmap: "./outputs/heatmaps"
+output_cloud: "./outputs/pointclouds"
+output_bin: "./outputs/velodyne_bin"
+
+depth_model: "depth-anything/Depth-Anything-V2-Base-hf"
+
+fx: 721.5377
+fy: 721.5377
+
+cx: 609.5593
+cy: 172.8540
+
+max_depth: 80.0

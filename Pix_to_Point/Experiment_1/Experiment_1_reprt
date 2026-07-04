@@ -1,0 +1,165 @@
+# Bidirectional LiDAR ↔ RGB Perception Experiment Report
+
+## Objective
+
+The goal of this experiment was to build a bidirectional perception pipeline between RGB images, depth maps, and LiDAR-style point clouds. The system was designed to explore pseudo-LiDAR generation using deep learning.
+
+The implemented pipeline includes:
+
+1. RGB → Depth Estimation
+2. Depth → Point Cloud Generation
+
+The long-term objective is to reconstruct 3D scene geometry from monocular RGB input.
+
+---
+
+# Dataset Preparation
+
+The dataset was organized into paired formats:
+
+* RGB images
+* Depth maps (.npy)
+* Point cloud files (.npy)
+
+Each depth map corresponded to a point cloud sample.
+
+Data preprocessing included:
+
+* normalization of depth maps
+* fixed-size point cloud sampling/padding
+* train-validation split
+* PyTorch Dataset and DataLoader pipeline creation
+
+---
+
+# Model Architecture
+
+## Depth → Point Cloud Network
+
+A CNN-based encoder network was implemented using:
+
+* Convolution layers
+* Batch Normalization
+* ReLU activations
+* MaxPooling layers
+* Adaptive Average Pooling
+
+The encoded features were passed through fully connected layers to predict:
+
+```text
+2048 × 3
+```
+
+XYZ coordinates representing the point cloud.
+
+The model was trained using:
+
+* Chamfer Distance Loss
+* Adam optimizer
+* Learning rate scheduling
+* Early stopping
+
+---
+
+# Training Results
+
+The training pipeline executed successfully on GPU.
+
+The system successfully:
+
+* loaded paired depth and point cloud data
+* trained the neural network
+* saved best checkpoints
+* generated prediction visualizations
+* produced pseudo point clouds from predicted depth maps
+
+Loss curves showed that the network learned meaningful scene structure during training.
+
+---
+
+# Visualization Results
+
+The generated outputs demonstrated that:
+
+## Successful Outcomes
+
+* The model learned coarse scene geometry.
+* Road structure and depth gradients were visible.
+* The point cloud generation pipeline worked correctly.
+* Predicted point clouds were spatially distributed in 3D space.
+
+## Observed Limitations
+
+* Predicted depth maps were blurry.
+* Fine object boundaries were not preserved.
+* Point clouds were partially collapsed into dense clusters.
+* 3D geometry lacked detailed scene structure.
+
+The current architecture captures global scene layout but not accurate geometric reconstruction.
+
+---
+
+# Technical Challenges Faced
+
+Several implementation issues were encountered and resolved:
+
+* matplotlib 3D backend conflicts
+* model checkpoint architecture mismatches
+* tensor shape mismatches during inference
+* state_dict loading errors
+* visualization environment issues
+
+All major debugging issues were successfully fixed.
+
+---
+
+# Key Insight from Experiment
+
+A major observation from this experiment is that learning point cloud generation entirely through fully connected layers is inefficient for geometric reconstruction.
+
+Instead of learning XYZ coordinates directly, depth maps can be converted into 3D points using camera projection equations.
+
+This suggests that a geometry-based pseudo-LiDAR pipeline would likely outperform the current fully learned approach.
+
+---
+
+# Current Status
+
+Current pipeline:
+
+```text
+RGB → Depth Estimation → Learned Point Cloud
+```
+
+Experiment status:
+
+* Pipeline implementation: Successful
+* Training and inference: Successful
+* Basic pseudo-LiDAR generation: Successful
+* Geometric accuracy: Limited
+
+Estimated qualitative performance:
+
+* Depth prediction quality: Moderate
+* Point cloud realism: Low to moderate
+* Overall system stability: Good
+
+---
+
+# Future Improvements
+
+Recommended future work includes:
+
+* Using U-Net or ResNet-based depth estimation
+* Replacing FC point cloud prediction with geometric reprojection
+* Using camera intrinsics for physically correct 3D reconstruction
+* Increasing dataset size and training duration
+* Adding advanced loss functions and point cloud regularization
+
+Future pipeline recommendation:
+
+```text
+RGB → Depth Network → Geometric Projection → Pseudo LiDAR
+```
+
+This approach is expected to produce significantly better 3D reconstruction quality.

@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Point Cloud Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #101214;
+      color: #e8eaed;
+      font-family: Arial, sans-serif;
+    }
+    #app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100%;
+    }
+    aside {
+      box-sizing: border-box;
+      padding: 16px;
+      background: #181b1f;
+      border-right: 1px solid #2d333a;
+      overflow: auto;
+    }
+    main {
+      position: relative;
+      min-width: 0;
+    }
+    #viewer {
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0 0 16px;
+      font-weight: 700;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #aeb6c2;
+      margin: 14px 0 6px;
+    }
+    input, select, button {
+      box-sizing: border-box;
+      width: 100%;
+      background: #23282f;
+      color: #eef2f7;
+      border: 1px solid #3a424c;
+      border-radius: 6px;
+      padding: 8px;
+    }
+    input[type="range"] {
+      padding: 0;
+    }
+    button {
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #2d3540;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 64px;
+      gap: 8px;
+      align-items: center;
+    }
+    .stat {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #c9d1db;
+      background: #111418;
+      border: 1px solid #2d333a;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 12px;
+      white-space: pre-wrap;
+    }
+    .hint {
+      font-size: 12px;
+      color: #98a3af;
+      line-height: 1.4;
+      margin-top: 14px;
+    }
+    #hud {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      padding: 8px 10px;
+      background: rgba(16, 18, 20, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      font-size: 12px;
+      color: #dce3ea;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside>
+      <h1>Point Cloud Viewer</h1>
+
+      <label>Predicted / Primary .bin</label>
+      <input id="fileA" type="file" accept=".bin,.npy" />
+
+      <label>Target / Secondary .bin</label>
+      <input id="fileB" type="file" accept=".bin,.npy" />
+
+      <label>View Mode</label>
+      <select id="viewMode">
+        <option value="overlay">Overlay</option>
+        <option value="primary">Primary only</option>
+        <option value="secondary">Secondary only</option>
+        <option value="side">Side by side</option>
+      </select>
+
+      <label>Color Mode</label>
+      <select id="colorMode">
+        <option value="intensity">Intensity</option>
+        <option value="height">Height</option>
+        <option value="distance">Distance</option>
+        <option value="source">Source</option>
+      </select>
+
+      <label>Point Size</label>
+      <div class="row">
+        <input id="pointSize" type="range" min="0.01" max="0.25" value="0.045" step="0.005" />
+        <span id="pointSizeValue">0.045</span>
+      </div>
+
+      <label>Max Distance</label>
+      <div class="row">
+        <input id="maxDistance" type="range" min="5" max="120" value="80" step="1" />
+        <span id="maxDistanceValue">80m</span>
+      </div>
+
+      <button id="resetCamera">Reset Camera</button>
+      <button id="clear">Clear</button>
+
+      <div id="stats" class="stat">Load a KITTI .bin file with float32 rows: x, y, z, intensity.</div>
+      <div class="hint">
+        Mouse: drag to rotate, wheel to zoom, right-drag to pan.
+        Use overlay to compare generated pseudo-LiDAR against target LiDAR.
+      </div>
+    </aside>
+    <main>
+      <div id="viewer"></div>
+      <div id="hud">No point cloud loaded</div>
+    </main>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const viewer = document.getElementById("viewer");
+    const hud = document.getElementById("hud");
+    const stats = document.getElementById("stats");
+    const fileA = document.getElementById("fileA");
+    const fileB = document.getElementById("fileB");
+    const viewMode = document.getElementById("viewMode");
+    const colorMode = document.getElementById("colorMode");
+    const pointSize = document.getElementById("pointSize");
+    const pointSizeValue = document.getElementById("pointSizeValue");
+    const maxDistance = document.getElementById("maxDistance");
+    const maxDistanceValue = document.getElementById("maxDistanceValue");
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x101214);
+
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    viewer.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+
+    const grid = new THREE.GridHelper(100, 50, 0x3a424c, 0x242a31);
+    grid.rotation.x = Math.PI / 2;
+    scene.add(grid);
+
+    const axes = new THREE.AxesHelper(5);
+    scene.add(axes);
+
+    let clouds = { a: null, b: null };
+    let raw = { a: null, b: null };
+
+    function resize() {
+      const rect = viewer.getBoundingClientRect();
+      renderer.setSize(rect.width, rect.height);
+      camera.aspect = rect.width / Math.max(1, rect.height);
+      camera.updateProjectionMatrix();
+    }
+
+    function resetCamera() {
+      camera.position.set(-18, -28, 14);
+      controls.target.set(18, 0, 0);
+      controls.update();
+    }
+
+    function parseBin(buffer) {
+      const floats = new Float32Array(buffer);
+      const usable = Math.floor(floats.length / 4) * 4;
+      const count = usable / 4;
+      const points = new Float32Array(count * 4);
+      points.set(floats.subarray(0, usable));
+      if (count === 0) {
+        throw new Error("No float32 XYZI points found in this file.");
+      }
+      return points;
+    }
+
+    function colorForPoint(x, y, z, intensity, sourceIndex, mode, maxDist) {
+      if (mode === "source") {
+        return sourceIndex === 0 ? [0.15, 0.85, 1.0] : [1.0, 0.35, 0.15];
+      }
+      if (mode === "height") {
+        const t = THREE.MathUtils.clamp((z + 3) / 6, 0, 1);
+        return [t, 0.7 * (1 - Math.abs(t - 0.5) * 2), 1 - t];
+      }
+      if (mode === "distance") {
+        const d = Math.sqrt(x * x + y * y + z * z);
+        const t = THREE.MathUtils.clamp(d / maxDist, 0, 1);
+        return [t, 1 - t * 0.6, 1 - t];
+      }
+      const t = THREE.MathUtils.clamp(intensity, 0, 1);
+      return [0.08 + 0.92 * t, 0.25 + 0.75 * t, 0.12 + 0.35 * t];
+    }
+
+    function buildCloud(points, sourceIndex) {
+      const maxDist = Number(maxDistance.value);
+      const mode = colorMode.value;
+      const positions = [];
+      const colors = [];
+      let kept = 0;
+      let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+      let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+
+      for (let i = 0; i < points.length; i += 4) {
+        const x = points[i];
+        const y = points[i + 1];
+        const z = points[i + 2];
+        const intensity = points[i + 3];
+        const d = Math.sqrt(x * x + y * y + z * z);
+        if (!Number.isFinite(d) || d <= 0.01 || d > maxDist) continue;
+        positions.push(x, y, z);
+        const c = colorForPoint(x, y, z, intensity, sourceIndex, mode, maxDist);
+        colors.push(c[0], c[1], c[2]);
+        min.min(new THREE.Vector3(x, y, z));
+        max.max(new THREE.Vector3(x, y, z));
+        kept++;
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      geometry.computeBoundingSphere();
+
+      const material = new THREE.PointsMaterial({
+        size: Number(pointSize.value),
+        vertexColors: true,
+        sizeAttenuation: true
+      });
+      const cloud = new THREE.Points(geometry, material);
+      cloud.userData = { kept, min, max };
+      return cloud;
+    }
+
+    function updateClouds() {
+      for (const key of ["a", "b"]) {
+        if (clouds[key]) {
+          scene.remove(clouds[key]);
+          clouds[key].geometry.dispose();
+          clouds[key].material.dispose();
+          clouds[key] = null;
+        }
+      }
+
+      if (raw.a) clouds.a = buildCloud(raw.a, 0);
+      if (raw.b) clouds.b = buildCloud(raw.b, 1);
+
+      const mode = viewMode.value;
+      if (clouds.a) {
+        clouds.a.position.x = mode === "side" && clouds.b ? -35 : 0;
+        clouds.a.visible = mode !== "secondary";
+        scene.add(clouds.a);
+      }
+      if (clouds.b) {
+        clouds.b.position.x = mode === "side" && clouds.a ? 35 : 0;
+        clouds.b.visible = mode !== "primary";
+        scene.add(clouds.b);
+      }
+      updateStats();
+    }
+
+    function updateStats() {
+      const lines = [];
+      for (const [label, key] of [["Primary", "a"], ["Secondary", "b"]]) {
+        if (!raw[key]) continue;
+        const total = raw[key].length / 4;
+        const kept = clouds[key]?.userData.kept ?? 0;
+        lines.push(`${label}: ${kept.toLocaleString()} / ${total.toLocaleString()} points shown`);
+      }
+      stats.textContent = lines.length ? lines.join("\n") : "Load a KITTI .bin file with float32 rows: x, y, z, intensity.";
+      hud.textContent = lines.length ? lines.join(" | ") : "No point cloud loaded";
+    }
+
+    async function loadFile(file, key) {
+      try {
+        const buffer = await file.arrayBuffer();
+        raw[key] = parseBin(buffer);
+        updateClouds();
+        resetCamera();
+      } catch (error) {
+        stats.textContent = `Failed to load ${file.name}: ${error.message}`;
+      }
+    }
+
+    fileA.addEventListener("change", () => {
+      if (fileA.files[0]) loadFile(fileA.files[0], "a");
+    });
+    fileB.addEventListener("change", () => {
+      if (fileB.files[0]) loadFile(fileB.files[0], "b");
+    });
+    viewMode.addEventListener("change", updateClouds);
+    colorMode.addEventListener("change", updateClouds);
+    pointSize.addEventListener("input", () => {
+      pointSizeValue.textContent = pointSize.value;
+      if (clouds.a) clouds.a.material.size = Number(pointSize.value);
+      if (clouds.b) clouds.b.material.size = Number(pointSize.value);
+    });
+    maxDistance.addEventListener("input", () => {
+      maxDistanceValue.textContent = `${maxDistance.value}m`;
+      updateClouds();
+    });
+    document.getElementById("resetCamera").addEventListener("click", resetCamera);
+    document.getElementById("clear").addEventListener("click", () => {
+      raw = { a: null, b: null };
+      fileA.value = "";
+      fileB.value = "";
+      updateClouds();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+    resetCamera();
+    animate();
+  </script>
+</body>
+</html>

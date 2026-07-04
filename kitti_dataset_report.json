@@ -1,0 +1,26 @@
+{
+    "velodyne": {
+        "total_files": 7481,
+        "extensions": {
+            ".bin": 7481
+        }
+    },
+    "label_2": {
+        "total_files": 7481,
+        "extensions": {
+            ".txt": 7481
+        }
+    },
+    "image_2": {
+        "total_files": 7481,
+        "extensions": {
+            ".png": 7481
+        }
+    },
+    "calib": {
+        "total_files": 7481,
+        "extensions": {
+            ".txt": 7481
+        }
+    }
+}
